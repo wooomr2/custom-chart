@@ -1,0 +1,12 @@
+body {
+  font-family: Arial;
+  background-color: lightsteelblue;
+  margin: 0;
+}
+
+table,
+td {
+  border: 2px solid white;
+  padding: 5px;
+  text-align: center;
+}

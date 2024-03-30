@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Custom Chart</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+  </head>
+  <body>
+    <h1>Custom Chart</h1>
+    <div id="chartContainer"></div>
+    <table id="dataTable"></table>
+
+    <script src="./math.js"></script>
+    <script src="./fake.js"></script>
+    <script>
+      const thead = dataTable.createTHead();
+      const tr = thead.insertRow();
+      tr.insertCell().innerHTML = "Id";
+      tr.insertCell().innerHTML = "Type";
+      tr.insertCell().innerHTML = "Km";
+      tr.insertCell().innerHTML = "Price";
+
+      const tbody = dataTable.createTBody();
+      for (const sample of samples) {
+        const tr = tbody.insertRow();
+        tr.insertCell().innerHTML = sample.id;
+        tr.insertCell().innerHTML = sample.label;
+        tr.insertCell().innerHTML = formatNumber(sample.point[0], 2);
+        tr.insertCell().innerHTML = formatNumber(sample.point[1], 2);
+      }
+    </script>
+  </body>
+</html>
