@@ -164,13 +164,7 @@ class Chart {
   }
 
   #draw() {
-    const {
-      ctx,
-      canvas,
-      transparency,
-      hoveredSample: nearestSampleToMouse,
-      samples,
-    } = this;
+    const { ctx, canvas, transparency, hoveredSample, samples } = this;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -182,8 +176,8 @@ class Chart {
 
     ctx.globalAlpha = 1;
 
-    if (nearestSampleToMouse) {
-      this.#emphasizeSample(nearestSampleToMouse);
+    if (hoveredSample) {
+      this.#emphasizeSample(hoveredSample);
     }
   }
 
