@@ -16,10 +16,74 @@ class Chart {
     this.margin = options.size * 0.1;
     this.transparency = 0.5;
 
+    this.dataTrans = {
+      offset: [0, 0],
+      scale: 1,
+    };
+    this.dragInfo = {
+      start: [0, 0],
+      end: [0, 0],
+      offset: [0, 0],
+      dragging: false,
+    };
+
+    this.defaultDataBounds = this.#getDataBounds();
     this.dataBounds = this.#getDataBounds();
     this.pixelBounds = this.#getPixelBounds();
 
     this.#draw();
+
+    this.#addEventListeners();
+  }
+
+  #addEventListeners() {
+    const { canvas, dataTrans, dragInfo } = this;
+
+    canvas.onmousedown = (evt) => {
+      const dataLoc = this.#getMouse(evt, true);
+      dragInfo.start = dataLoc;
+      dragInfo.dragging = true;
+      console.log(dataLoc);
+    };
+
+    canvas.onmousemove = (evt) => {
+      if (dragInfo.dragging) {
+        const dataLoc = this.#getMouse(evt, true);
+        dragInfo.end = dataLoc;
+        dragInfo.offset = subtract(dragInfo.start, dragInfo.end);
+
+        const newOffset = add(dataTrans.offset, dragInfo.offset);
+
+        this.#updateDataBounds(newOffset);
+        this.#draw();
+      }
+    };
+
+    canvas.onmouseup = (evt) => {
+      dataTrans.offset = add(dataTrans.offset, dragInfo.offset);
+      dragInfo.dragging = false;
+    };
+  }
+
+  #updateDataBounds(offset) {
+    const { dataBounds, defaultDataBounds: defaults } = this;
+
+    dataBounds.left = defaults.left + offset[0];
+    dataBounds.right = defaults.right + offset[0];
+    dataBounds.top = defaults.top + offset[1];
+    dataBounds.bottom = defaults.bottom + offset[1];
+  }
+
+  #getMouse(evt, dataSpace = false) {
+    const rect = this.canvas.getBoundingClientRect();
+    const pixelLoc = [evt.clientX - rect.left, evt.clientY - rect.top];
+
+    if (dataSpace) {
+      const dataLoc = remapPoint(this.pixelBounds, this.dataBounds, pixelLoc);
+      return dataLoc;
+    }
+
+    return pixelLoc;
   }
 
   #getDataBounds() {
