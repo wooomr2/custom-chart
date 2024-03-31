@@ -6,6 +6,10 @@ const subtract = (p1, p2) => {
   return [p1[0] - p2[0], p1[1] - p2[1]];
 };
 
+const scale = (p, scaler) => {
+  return [p[0] * scaler, p[1] * scaler];
+};
+
 const lerp = (a, b, t) => {
   return a + (b - a) * t;
 };

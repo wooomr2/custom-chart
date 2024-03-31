@@ -50,11 +50,14 @@ class Chart {
       if (dragInfo.dragging) {
         const dataLoc = this.#getMouse(evt, true);
         dragInfo.end = dataLoc;
-        dragInfo.offset = subtract(dragInfo.start, dragInfo.end);
+        dragInfo.offset = scale(
+          subtract(dragInfo.start, dragInfo.end),
+          dataTrans.scale
+        );
 
         const newOffset = add(dataTrans.offset, dragInfo.offset);
 
-        this.#updateDataBounds(newOffset);
+        this.#updateDataBounds(newOffset, dataTrans.scale);
         this.#draw();
       }
     };
@@ -63,21 +66,46 @@ class Chart {
       dataTrans.offset = add(dataTrans.offset, dragInfo.offset);
       dragInfo.dragging = false;
     };
+
+    canvas.onwheel = (evt) => {
+      const direction = Math.sign(evt.deltaY);
+      const step = 0.02;
+
+      dataTrans.scale += direction * step;
+      // set scale min, max
+      dataTrans.scale = Math.max(step, Math.min(2, dataTrans.scale));
+
+      this.#updateDataBounds(dataTrans.offset, dataTrans.scale);
+
+      this.#draw();
+      evt.preventDefault();
+    };
   }
 
-  #updateDataBounds(offset) {
+  #updateDataBounds(offset, scale) {
     const { dataBounds, defaultDataBounds: defaults } = this;
 
     dataBounds.left = defaults.left + offset[0];
     dataBounds.right = defaults.right + offset[0];
     dataBounds.top = defaults.top + offset[1];
     dataBounds.bottom = defaults.bottom + offset[1];
+
+    const center = [
+      dataBounds.left + dataBounds.right / 2,
+      dataBounds.top + dataBounds.bottom / 2,
+    ];
+
+    // R^2 Space이므로 scale^2
+    dataBounds.left = lerp(center[0], dataBounds.left, scale ** 2);
+    dataBounds.right = lerp(center[0], dataBounds.right, scale ** 2);
+    dataBounds.top = lerp(center[1], dataBounds.top, scale ** 2);
+    dataBounds.bottom = lerp(center[1], dataBounds.bottom, scale ** 2);
   }
 
   #getMouse(evt, dataSpace = false) {
     const rect = this.canvas.getBoundingClientRect();
     const pixelLoc = [evt.clientX - rect.left, evt.clientY - rect.top];
-    
+
     if (dataSpace) {
       const dataLoc = remapPoint(
         this.pixelBounds,
