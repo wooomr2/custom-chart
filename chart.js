@@ -50,7 +50,8 @@ class Chart {
 
       dragInfo.start = dataLoc;
       dragInfo.dragging = true;
-      console.log(dataLoc);
+      dragInfo.end = [0, 0];
+      dragInfo.offset = [0, 0];
     };
 
     canvas.onmousemove = (evt) => {
@@ -86,6 +87,7 @@ class Chart {
 
     canvas.onmouseup = () => {
       dataTrans.offset = add(dataTrans.offset, dragInfo.offset);
+
       dragInfo.dragging = false;
     };
 
@@ -104,14 +106,27 @@ class Chart {
     };
 
     canvas.onclick = () => {
-      if (this.hoveredSample) {
-        this.selectedSample = this.hoveredSample;
-        if (this.onClick) {
-          this.onClick(this.selectedSample);
-        }
-
-        this.#draw();
+      if (!equals(dragInfo.offset, [0, 0])) {
+        console.log(dragInfo.offset);
+        return;
       }
+
+      if (this.hoveredSample) {
+        if (this.selectedSample == this.hoveredSample) {
+          console.log(this.selectedSample, this.hoveredSample);
+          this.selectedSample = null;
+        } else {
+          this.selectedSample = this.hoveredSample;
+        }
+      } else {
+        this.selectedSample = null;
+      }
+
+      if (this.onClick) {
+        this.onClick(this.selectedSample);
+      }
+
+      this.#draw();
     };
   }
 

@@ -50,18 +50,28 @@
       }
 
       function handleClick(sample, doScroll = true) {
-        [...document.querySelectorAll(".emphasize")].forEach((e) =>
-          e.classList.remove("emphasize")
-        );
+        if (!sample) {
+          [...document.querySelectorAll(".emphasize")].forEach((e) =>
+            e.classList.remove("emphasize")
+          );
+
+          return;
+        }
 
         const el = document.getElementById("sample-" + sample.id);
+
+        if (el.classList.contains("emphasize")) {
+          el.classList.remove("emphasize");
+          chart.selectSample(null);
+          return;
+        }
+
         el.classList.add("emphasize");
+        chart.selectSample(sample);
 
         if (doScroll) {
           el.scrollIntoView({ behavior: "auto", block: "center" });
         }
-
-        chart.selectSample(sample);
       }
     </script>
   </body>
