@@ -28,7 +28,7 @@
 
       let chart;
       setTimeout(() => {
-        chart = new Chart(chartContainer, samples, options);
+        chart = new Chart(chartContainer, samples, options, handleClick);
       }, 100);
 
       const thead = dataTable.createTHead();
@@ -41,10 +41,27 @@
       const tbody = dataTable.createTBody();
       for (const sample of samples) {
         const tr = tbody.insertRow();
+        tr.id = "sample-" + sample.id;
+        tr.onclick = () => handleClick(sample, false);
         tr.insertCell().innerHTML = sample.id;
         tr.insertCell().innerHTML = sample.label;
         tr.insertCell().innerHTML = formatNumber(sample.point[0], 2);
         tr.insertCell().innerHTML = formatNumber(sample.point[1], 2);
+      }
+
+      function handleClick(sample, doScroll = true) {
+        [...document.querySelectorAll(".emphasize")].forEach((e) =>
+          e.classList.remove("emphasize")
+        );
+
+        const el = document.getElementById("sample-" + sample.id);
+        el.classList.add("emphasize");
+
+        if (doScroll) {
+          el.scrollIntoView({ behavior: "auto", block: "center" });
+        }
+
+        chart.selectSample(sample);
       }
     </script>
   </body>

@@ -1,10 +1,11 @@
 class Chart {
-  constructor(container, samples, options) {
+  constructor(container, samples, options, onClick = null) {
     this.samples = samples;
 
     this.axesLabels = options.axesLabels;
     this.styles = options.styles;
     this.icon = options.icon;
+    this.onClick = onClick;
 
     this.canvas = document.createElement("canvas");
     this.canvas.width = options.size;
@@ -29,6 +30,7 @@ class Chart {
     };
 
     this.hoveredSample = null;
+    this.selectedSample = null;
 
     this.defaultDataBounds = this.#getDataBounds();
     this.dataBounds = this.#getDataBounds();
@@ -82,7 +84,7 @@ class Chart {
       this.#draw();
     };
 
-    canvas.onmouseup = (evt) => {
+    canvas.onmouseup = () => {
       dataTrans.offset = add(dataTrans.offset, dragInfo.offset);
       dragInfo.dragging = false;
     };
@@ -99,6 +101,17 @@ class Chart {
 
       this.#draw();
       evt.preventDefault();
+    };
+
+    canvas.onclick = () => {
+      if (this.hoveredSample) {
+        this.selectedSample = this.hoveredSample;
+        if (this.onClick) {
+          this.onClick(this.selectedSample);
+        }
+
+        this.#draw();
+      }
     };
   }
 
@@ -164,7 +177,14 @@ class Chart {
   }
 
   #draw() {
-    const { ctx, canvas, transparency, hoveredSample, samples } = this;
+    const {
+      ctx,
+      canvas,
+      transparency,
+      hoveredSample,
+      selectedSample,
+      samples,
+    } = this;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -179,6 +199,15 @@ class Chart {
     if (hoveredSample) {
       this.#emphasizeSample(hoveredSample);
     }
+
+    if (selectedSample) {
+      this.#emphasizeSample(selectedSample, "yellow");
+    }
+  }
+
+  selectSample(sample) {
+    this.selectedSample = sample;
+    this.#draw();
   }
 
   #emphasizeSample(sample, color = "white") {
