@@ -18,11 +18,18 @@
         size: 250,
         axesLabels: ["Kilometers", "Price"],
         styles: {
-          basic: "gray",
-          sport: "red",
+          basic: { color: "blue", text: "🚗" },
+          sport: { color: "red", text: "🏎️" },
         },
+        icon: "image",
       };
-      const chart = new Chart(chartContainer, samples, options);
+
+      Graphics.generateImages(options.styles);
+
+      let chart;
+      setTimeout(() => {
+        chart = new Chart(chartContainer, samples, options);
+      }, 100);
 
       const thead = dataTable.createTHead();
       const tr = thead.insertRow();
