@@ -77,9 +77,13 @@ class Chart {
   #getMouse(evt, dataSpace = false) {
     const rect = this.canvas.getBoundingClientRect();
     const pixelLoc = [evt.clientX - rect.left, evt.clientY - rect.top];
-
+    
     if (dataSpace) {
-      const dataLoc = remapPoint(this.pixelBounds, this.dataBounds, pixelLoc);
+      const dataLoc = remapPoint(
+        this.pixelBounds,
+        this.defaultDataBounds,
+        pixelLoc
+      );
       return dataLoc;
     }
 
