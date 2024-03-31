@@ -28,6 +28,8 @@ class Chart {
       dragging: false,
     };
 
+    this.hoveredSample = null;
+
     this.defaultDataBounds = this.#getDataBounds();
     this.dataBounds = this.#getDataBounds();
     this.pixelBounds = this.#getPixelBounds();
@@ -38,10 +40,12 @@ class Chart {
   }
 
   #addEventListeners() {
-    const { canvas, dataTrans, dragInfo } = this;
+    const { canvas, dataTrans, dragInfo, samples, dataBounds, pixelBounds } =
+      this;
 
     canvas.onmousedown = (evt) => {
       const dataLoc = this.#getMouse(evt, true);
+
       dragInfo.start = dataLoc;
       dragInfo.dragging = true;
       console.log(dataLoc);
@@ -50,6 +54,7 @@ class Chart {
     canvas.onmousemove = (evt) => {
       if (dragInfo.dragging) {
         const dataLoc = this.#getMouse(evt, true);
+
         dragInfo.end = dataLoc;
         dragInfo.offset = scale(
           subtract(dragInfo.start, dragInfo.end),
@@ -59,8 +64,22 @@ class Chart {
         const newOffset = add(dataTrans.offset, dragInfo.offset);
 
         this.#updateDataBounds(newOffset, dataTrans.scale);
-        this.#draw();
       }
+
+      {
+        const pLoc = this.#getMouse(evt);
+        const pPoints = samples.map((s) =>
+          remapPoint(dataBounds, pixelBounds, s.point)
+        );
+
+        const nearestIndex = getNearestIndex(pLoc, pPoints);
+        const nearest = samples[nearestIndex];
+        const dist = distance(pLoc, pPoints[nearestIndex]);
+
+        this.hoveredSample = dist < this.margin / 2 ? nearest : null;
+      }
+
+      this.#draw();
     };
 
     canvas.onmouseup = (evt) => {
@@ -74,7 +93,7 @@ class Chart {
 
       dataTrans.scale += direction * step;
       // set scale min, max
-      dataTrans.scale = Math.max(step, Math.min(1, dataTrans.scale));
+      dataTrans.scale = Math.max(step, Math.min(2, dataTrans.scale));
 
       this.#updateDataBounds(dataTrans.offset, dataTrans.scale);
 
@@ -104,15 +123,13 @@ class Chart {
   }
 
   #getMouse(evt, dataSpace = false) {
-    const rect = this.canvas.getBoundingClientRect();
+    const { canvas, pixelBounds, defaultDataBounds } = this;
+
+    const rect = canvas.getBoundingClientRect();
     const pixelLoc = [evt.clientX - rect.left, evt.clientY - rect.top];
 
     if (dataSpace) {
-      const dataLoc = remapPoint(
-        this.pixelBounds,
-        this.defaultDataBounds,
-        pixelLoc
-      );
+      const dataLoc = remapPoint(pixelBounds, defaultDataBounds, pixelLoc);
       return dataLoc;
     }
 
@@ -147,15 +164,43 @@ class Chart {
   }
 
   #draw() {
-    const { ctx, canvas, transparency } = this;
+    const {
+      ctx,
+      canvas,
+      transparency,
+      hoveredSample: nearestSampleToMouse,
+      samples,
+    } = this;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     this.#drawAxes();
 
     ctx.globalAlpha = transparency;
-    this.#drawSamples();
+
+    this.#drawSamples(samples);
+
     ctx.globalAlpha = 1;
+
+    if (nearestSampleToMouse) {
+      this.#emphasizeSample(nearestSampleToMouse);
+    }
+  }
+
+  #emphasizeSample(sample, color = "white") {
+    const { ctx, dataBounds, pixelBounds, margin } = this;
+    const pLoc = remapPoint(dataBounds, pixelBounds, sample.point);
+
+    const gradient = ctx.createRadialGradient(...pLoc, 0, ...pLoc, margin);
+
+    gradient.addColorStop(0, color);
+    // white: rgb(0,0,0), black: rgb(255,255,255)
+    // alpha: 0: 완전투명 ~ 1: 완전불투명
+    gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+
+    Graphics.drawPoint(ctx, pLoc, gradient, margin * 2);
+
+    this.#drawSamples([sample]);
   }
 
   #drawAxes() {
@@ -245,8 +290,8 @@ class Chart {
     }
   }
 
-  #drawSamples() {
-    const { ctx, samples, dataBounds, pixelBounds } = this;
+  #drawSamples(samples) {
+    const { ctx, dataBounds, pixelBounds, styles, icon } = this;
     for (const sample of samples) {
       const { point, label } = sample;
 
@@ -256,21 +301,21 @@ class Chart {
       // y
       const pixelLoc = remapPoint(dataBounds, pixelBounds, point);
 
-      switch (this.icon) {
+      switch (icon) {
         case "image":
           Graphics.drawImage(ctx, {
-            image: this.styles[label].image,
+            image: styles[label].image,
             loc: pixelLoc,
           });
           break;
         case "text":
           Graphics.drawText(ctx, {
-            text: this.styles[label].text,
+            text: styles[label].text,
             loc: pixelLoc,
           });
           break;
         default:
-          Graphics.drawPoint(ctx, pixelLoc, this.styles[label].color);
+          Graphics.drawPoint(ctx, pixelLoc, styles[label].color);
           break;
       }
     }
