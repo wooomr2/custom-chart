@@ -107,15 +107,14 @@ class Chart {
 
     canvas.onclick = () => {
       if (!equals(dragInfo.offset, [0, 0])) {
-        console.log(dragInfo.offset);
         return;
       }
 
       if (this.hoveredSample) {
         if (this.selectedSample == this.hoveredSample) {
-          console.log(this.selectedSample, this.hoveredSample);
           this.selectedSample = null;
         } else {
+          console.log(this.selectedSample, this.hoveredSample);
           this.selectedSample = this.hoveredSample;
         }
       } else {
