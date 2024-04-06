@@ -310,7 +310,7 @@ class Chart {
     }
 
     {
-      const dataMax = remapPoint(pixelBounds, dataBounds, [left, bottom]);
+      const dataMax = remapPoint(pixelBounds, dataBounds, [right, top]);
 
       Graphics.drawText(ctx, {
         text: formatNumber(dataMax[0], 2),
