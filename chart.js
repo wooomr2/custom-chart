@@ -114,7 +114,6 @@ class Chart {
         if (this.selectedSample == this.hoveredSample) {
           this.selectedSample = null;
         } else {
-          console.log(this.selectedSample, this.hoveredSample);
           this.selectedSample = this.hoveredSample;
         }
       } else {

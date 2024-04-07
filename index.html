@@ -51,9 +51,9 @@
 
       function handleClick(sample, doScroll = true) {
         if (!sample) {
-          [...document.querySelectorAll(".emphasize")].forEach((e) =>
-            e.classList.remove("emphasize")
-          );
+          document
+            .querySelectorAll(".emphasize")
+            .forEach((e) => e.classList.remove("emphasize"));
 
           return;
         }
@@ -65,6 +65,10 @@
           chart.selectSample(null);
           return;
         }
+
+        document
+          .querySelectorAll(".emphasize")
+          .forEach((e) => e.classList.remove("emphasize"));
 
         el.classList.add("emphasize");
         chart.selectSample(sample);
